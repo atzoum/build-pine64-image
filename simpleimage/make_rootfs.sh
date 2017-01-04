@@ -324,7 +324,7 @@ EOF
 		if [ "$DISTRO" = "xenial" ]; then
 			DEB=ubuntu
 			DEBUSER=ubuntu
-			EXTRADEBS="software-properties-common zram-config ubuntu-minimal"
+			EXTRADEBS="software-properties-common zram-config ubuntu-minimal ntp nano curl portmap nfs-common lxc aufs-tools cgroup-lite apparmor docker.io"
 			ADDPPACMD="apt-add-repository -y ppa:longsleep/ubuntu-pine64-flavour-makers"
 			DISPTOOLCMD="apt-get -y install sunxi-disp-tool"
 		elif [ "$DISTRO" = "sid" -o "$DISTRO" = "jessie" ]; then
@@ -341,6 +341,8 @@ EOF
 		cat > "$DEST/second-phase" <<EOF
 #!/bin/sh
 export DEBIAN_FRONTEND=noninteractive
+echo 'LC_ALL=en_US.UTF-8' >> /etc/default/locale
+echo 'LANG=en_US.UTF-8' >> /etc/default/locale
 locale-gen en_US.UTF-8
 apt-get -y update
 apt-get -y install dosfstools curl xz-utils iw rfkill wpasupplicant openssh-server alsa-utils $EXTRADEBS
@@ -354,6 +356,8 @@ echo "$DEBUSER:$DEBUSER" | chpasswd
 usermod -a -G sudo,adm,input,video,plugdev $DEBUSER
 apt-get -y autoremove
 apt-get clean
+sed -i '/rotate 4/a size 200M' /etc/logrotate.conf
+echo 'options vxlan udp_port=4789' >> /etc/modprobe.d/vxlan.conf
 EOF
 		chmod +x "$DEST/second-phase"
 		do_chroot /second-phase
