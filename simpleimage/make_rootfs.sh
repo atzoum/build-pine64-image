@@ -353,11 +353,14 @@ $DISPTOOLCMD
 adduser --gecos $DEBUSER --disabled-login $DEBUSER --uid 1000
 chown -R 1000:1000 /home/$DEBUSER
 echo "$DEBUSER:$DEBUSER" | chpasswd
+echo "root:1234" | chpasswd
 usermod -a -G sudo,adm,input,video,plugdev $DEBUSER
 apt-get -y autoremove
 apt-get clean
 sed -i '/rotate 4/a size 200M' /etc/logrotate.conf
 echo 'options vxlan udp_port=4789' >> /etc/modprobe.d/vxlan.conf
+sed -i 's/prohibit-password/yes/g' /etc/ssh/sshd_config
+curl -sSL https://github.com/atzoum/docker-aarch64/raw/master/aarch64-docker/install.sh | bash
 EOF
 		chmod +x "$DEST/second-phase"
 		do_chroot /second-phase
